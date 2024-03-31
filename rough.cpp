@@ -1,54 +1,121 @@
 #include <iostream>
 using namespace std;
 
-void display(int arr[], int n) {
-    for (int i = 0; i < n; i++) {
-        cout << arr[i] << " ";
-    }
-    cout << endl;
-}
+struct bst {
+    int data;
+    bst* left;
+    bst* right;
+};
 
-void heapify(int arr[], int n, int i) {
-    int largest = i;
-    int left = 2 * i + 1;
-    int right = 2 * i + 2;
-    
-    if (left < n && arr[left] > arr[largest])
-        largest = left;
-    
-    if (right < n && arr[right] > arr[largest])
-        largest = right;
-    
-    if (largest != i) {
-        swap(arr[i], arr[largest]);
-        heapify(arr, n, largest);
+void insert_bst(bst*& root, int num) {
+    if (root == nullptr) {
+        root = new bst;
+        root->data = num;
+        root->left = nullptr;
+        root->right = nullptr;
+    } else if (num < root->data) {
+        insert_bst(root->left, num);
+    } else if (num > root->data) {
+        insert_bst(root->right, num);
+    } else {
+        cout << "Duplicate entry" << endl;
     }
 }
 
-void heap_sort(int arr[], int n) {
-    // Build max heap
-    for (int i = n / 2 - 1; i >= 0; i--) {
-        heapify(arr, n, i);
+void search_bst(bst* root, int num) {
+    if (root == nullptr) {
+        cout << "Item not found" << endl;
+        return;
     }
-    
-    // Extract elements from heap one by one
-    for (int i = n - 1; i >= 0; i--) {
-        swap(arr[0], arr[i]); // Move current root to end
-        heapify(arr, i, 0); // Call max heapify on the reduced heap
+
+    if (num < root->data) {
+        search_bst(root->left, num);
+    } else if (num > root->data) {
+        search_bst(root->right, num);
+    } else {
+        cout << "Item found" << endl;
     }
+}
+
+bst* findMax(bst* root) {
+    while (root->right != nullptr) {
+        root = root->right;
+    }
+    return root;
+}
+
+bst* remove_bst(bst* root, int val) {
+    if (root == nullptr) {
+        return nullptr;
+    }
+
+    if (val < root->data) {
+        root->left = remove_bst(root->left, val);
+    } else if (val > root->data) {
+        root->right = remove_bst(root->right, val);
+    } else {
+        if (root->left == nullptr) {
+            bst* temp = root->right;
+            delete root;
+            return temp;
+        } else if (root->right == nullptr) {
+            bst* temp = root->left;
+            delete root;
+            return temp;
+        } else {
+            bst* temp = findMax(root->left);
+            root->data = temp->data;
+            root->left = remove_bst(root->left, temp->data);
+        }
+    }
+
+    return root;
+}
+
+void display_bst_inorder(bst* root) {
+    if (root == nullptr) {
+        return;
+    }
+    display_bst_inorder(root->left);
+    cout << root->data << " ";
+    display_bst_inorder(root->right);
 }
 
 int main() {
-    int arr[] = {10, 5, 20, 1, 8};
-    int n = sizeof(arr) / sizeof(arr[0]);
+    bst* root = nullptr;
+    int ch, num;
+    while (true) {
+        cout << "Choose one of the following choices" << endl;
+        cout << "1. Insert 2. Search 3. Remove 4. Display 5. Exit" << endl;
+        cin >> ch;
 
-    cout << "Array before sorting: ";
-    display(arr, n);
-
-    heap_sort(arr, n);
-
-    cout << "Array after sorting: ";
-    display(arr, n);
-
+        switch (ch) {
+            case 1:
+                cout << "Enter the number to be inserted" << endl;
+                cin >> num;
+                insert_bst(root, num);
+                break;
+            case 2:
+                cout << "Enter the number to be searched" << endl;
+                cin >> num;
+                search_bst(root, num);
+                break;
+            case 3:
+                cout << "Enter the number to be deleted" << endl;
+                cin >> num;
+                root = remove_bst(root, num);
+                break;
+            case 4:
+                cout << "BST values in sorted order: ";
+                display_bst_inorder(root);
+                cout << endl;
+                break;
+            case 5:
+                return 0;
+            default:
+                cout << "Choose the right choice" << endl;
+                break;
+        }
+    }
     return 0;
 }
